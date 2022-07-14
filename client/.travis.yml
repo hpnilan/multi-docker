@@ -1,0 +1,23 @@
+sudo: required
+services:
+ - docker
+
+before_install:
+ - docker build -t hpnilan/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+ - docker run hpnilan/react-test npm test -- --coverage
+
+after_success:
+ - docker build -t hpnilan/multi-client ./client
+ - docker build -t hpnilan/multi-nginx ./nginx
+ - docker build -t hpnilan/multi-server ./server
+ - docker build -t hpnilan/multi-worker ./worker 
+
+#Log in to the docker CLI
+ - echo "$DOCKER_PASSWORD" | docker login -u "$Docker_ID" --password-stdin
+# Take those images and push them to docker hub
+ - docker push hpnilan/multi-client
+ - docker push hpnilan/multi-nginx
+ - docker push hpnilan/multi-server
+ - docker push hpnilan/multi-worker
